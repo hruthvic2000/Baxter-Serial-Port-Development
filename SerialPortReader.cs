@@ -15,7 +15,7 @@ namespace SerialPortConnect
 
         // This method reads data from the specified serial port asynchronously and returns it as a string
         // If any errors occur, it returns null and logs an error message to the console
-        public async Task<string> ReadAsync(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits, Handshake handshake, CancellationToken cancellationToken)
+        public async Task<string> ReadAsync(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits, Handshake handshake, CancellationToken cancellationToken, string Command)
         {
             try
             {
@@ -62,21 +62,49 @@ namespace SerialPortConnect
                 {
                     _port.Open();
                 }
-
                 // Set a timeout for the read operation
                 var timeout = TimeSpan.FromSeconds(5); // Set timeout to 5 seconds
                 using (var timeoutCts = new CancellationTokenSource(timeout))
                 using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken))
                 {
+                    // Clear the input buffer
+                    _port.DiscardInBuffer();
+
+                    // Send a command to the instrument
+                    //string command = "YOUR_COMMAND";
+                    _port.WriteLine(Command);
+
                     // Wait for data to be available on the port or for the timeout to expire
                     var readTask = _port.BaseStream.ReadAsync(new byte[1], 0, 1, linkedCts.Token);
+
                     // Wait for either the read operation to complete or for the timeout to expire
                     var completedTask = await Task.WhenAny(readTask, Task.Delay(timeout, linkedCts.Token));
+
                     // If the read operation completed successfully, read the data from the port
                     if (completedTask == readTask)
                     {
-                        string data=_port.ReadLine();
-                        return data.Trim();
+                        byte[] buffer = new byte[_port.BytesToRead];
+                        int bytesRead = _port.Read(buffer, 0, buffer.Length);
+                        string data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                        //data=_port.ReadLine();
+
+                        // Check the received response for ACK or NAK
+                        if (data.Contains("\x06"))
+                        {
+                            // ACK received, command recognized and completed
+                            return "Command successfully completed \nReceived response: " + data.Trim();
+                        }
+                        else if (data.Contains("\x15"))
+                        {
+                            // NAK received, error with the command string
+                            return "Error: Invalid command string \nReceived response: " + data.Trim();
+                        }
+                        else
+                        {
+                            // Other response received, handle as needed
+                            return "Received response: " + data.Trim();
+                        }
+
                     }
                     else
                     {
