@@ -92,20 +92,19 @@ namespace SerialPortConnect
                         if (data.Contains("\x06"))
                         {
                             // ACK received, command recognized and completed
-                            Console.WriteLine("Command successfully completed");
+                            return "Command successfully completed \nReceived response: " + data.Trim();
                         }
                         else if (data.Contains("\x15"))
                         {
                             // NAK received, error with the command string
-                            Console.WriteLine("Error: Invalid command string");
+                            return "Error: Invalid command string \nReceived response: " + data.Trim();
                         }
                         else
                         {
                             // Other response received, handle as needed
-                            Console.WriteLine("Received response: " + data);
+                            return "Received response: " + data.Trim();
                         }
 
-                        return data.Trim();
                     }
                     else
                     {
