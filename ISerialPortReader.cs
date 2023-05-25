@@ -28,6 +28,19 @@ namespace SerialPortInterface
         Task<string> ReadAsync(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits, Handshake handshake, CancellationToken cancellationToken, string command = null);
 
         /// <summary>
+        /// Logs an information message to the event log or logging system.
+        /// </summary>
+        /// <param name="message">The information message to be logged.</param>
+        void LogInformation(string message);
+
+        /// <summary>
+        /// Logs an error message to the event log or logging system.
+        /// </summary>
+        /// <param name="message">The error message to be logged.</param>
+        void LogError(string message);
+
+
+        /// <summary>
         /// Checks if the specified port name is valid.
         /// </summary>
         /// <param name="portName">The port name to validate.</param>
