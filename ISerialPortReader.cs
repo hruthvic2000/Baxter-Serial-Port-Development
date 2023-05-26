@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Ports;
-using System.Linq;
-using System.Text;
+﻿using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +22,18 @@ namespace SerialPortInterface
         /// <param name="command">The command to send to the instrument (optional).</param>
         /// <returns>A task representing the asynchronous read operation. The task returns the received data as a string.</returns>
         Task<string> ReadAsync(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits, Handshake handshake, CancellationToken cancellationToken, string command = null);
+
+        /// <summary>
+        /// Logs an information message to the event log or logging system.
+        /// </summary>
+        /// <param name="message">The information message to be logged.</param>
+        void LogInformation(string message);
+
+        /// <summary>
+        /// Logs an error message to the event log or logging system.
+        /// </summary>
+        /// <param name="message">The error message to be logged.</param>
+        void LogError(string message);
 
         /// <summary>
         /// Checks if the specified port name is valid.
