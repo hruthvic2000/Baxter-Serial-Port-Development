@@ -47,7 +47,6 @@ The exceptions that are handled include:
 The exception handling ensures that the read operation gracefully handles errors and returns null when an error occurs.
 
 ## Usage
-
 1. Add references to the SerialPortConnect and System.IO.Ports namespaces in your project.
 2. Include the **SerialPortInterface** and **SerialPortConnect** namespaces in your code file.
 3. Create an instance of the **SerialPortDataReader** class.
