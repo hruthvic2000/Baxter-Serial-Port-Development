@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SerialPortInterface;
+using System;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SerialPortInterface;
 
 namespace SerialPortConnect
 {
@@ -146,16 +145,16 @@ namespace SerialPortConnect
                         {
                             // Other response received, handle as needed
                             string responseMessage = "Received response: " + data.Trim();
-                            
                             LogInformation(responseMessage);
                             return responseMessage;
                         }
-
                     }
                     else
                     {
                         // If the read operation was cancelled due to a timeout, throw a TimeoutException
-                        throw new TimeoutException("Timeout while reading from port");
+                        string errorMessage = $"Timeout while reading from port {portName}";
+                        LogError(errorMessage);
+                        throw new TimeoutException(errorMessage);
                     }
                 }
             }
@@ -164,28 +163,28 @@ namespace SerialPortConnect
                 // Log an error message to the Event Viewer if any of the input parameters are invalid
                 string errorMessage = $"Invalid parameter value: {ex.Message}";
                 LogError(errorMessage);
-                return null;
+                throw new ArgumentException(errorMessage);
             }
             catch (UnauthorizedAccessException ex)
             {
                 // Log an error message to the Event Viewer if access to the port is denied
                 string errorMessage = $"Access to port {portName} is denied: {ex.Message}";
                 LogError(errorMessage);
-                return null;
+                throw new UnauthorizedAccessException(errorMessage);
             }
             catch (TimeoutException ex)
             {
                 // Log an error message to the Event Viewer if the read operation times out
                 string errorMessage = $"Timeout while reading from port {portName}: {ex.Message}";
-                LogError(errorMessage);
-                return null;
+                //LogError(errorMessage);
+                throw new TimeoutException(errorMessage);
             }
             catch (Exception ex)
             {
                 // Log a generic error message to the Event Viewer for any other exceptions that may occur
                 string errorMessage = $"Failed to read from the serial port: {ex.Message}";
                 LogError(errorMessage);
-                return null;
+                throw new Exception(errorMessage);
             }
             finally
             {
@@ -196,13 +195,13 @@ namespace SerialPortConnect
         }
 
         // This method logs an information message to the Event Viewer
-        private void LogInformation(string message)
+        public void LogInformation(string message)
         {
             _systemEventLog.WriteEntry(message, EventLogEntryType.Information);
         }
 
         // This method logs an error message to the Event Viewer
-        private void LogError(string message)
+        public void LogError(string message)
         {
             _systemEventLog.WriteEntry(message, EventLogEntryType.Error);
         }
@@ -250,5 +249,4 @@ namespace SerialPortConnect
             _port?.Dispose();
         }
     }
-
 }
